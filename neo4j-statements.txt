@@ -1,0 +1,14 @@
+call apoc.load.jdbc('jdbc:postgresql://host.docker.internal:5432/provider_network?user=dbt','select distinct lob_inidcator_name from lob_indicators' ) yield row
+create (:LOB{name:row.lob_indicator_name})
+
+call apoc.load.jdbc('jdbc:postgresql://host.docker.internal:5432/provider_network?user=dbt','lob_indicators' ) yield row
+match(p:Provider{name:row.sitename}),(l:LOB{name:row.lob_indicator_name})
+merge (p)-[:HAS_LOB]->(l)
+
+
+call apoc.load.jdbc('jdbc:postgresql://host.docker.internal:5432/provider_network?user=dbt','select distinct network_indicator_name from network_indicators' ) yield row
+create(n:Network{name:row.network_indicator_name})
+
+call apoc.load.jdbc('jdbc:postgresql://host.docker.internal:5432/provider_network?user=dbt','network_indicators' ) yield row
+match(p:Provider{name:row.sitename}), (n:Network{name:row.network_indicator_name})
+merge(p)-[:PART_OF]->(n)
